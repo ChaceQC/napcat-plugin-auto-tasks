@@ -161,10 +161,19 @@ export class TaskManager {
     private async executeBatch(name: string, targetsStr: string, action: (id: string) => Promise<void>) {
         const targets = targetsStr.split(/[,，]/).map(t => t.trim()).filter(t => t);
         if (targets.length === 0) return;
+    
         this.ctx.logger.info(`[内置任务] ${name} 触发`);
-        for (const id of targets) {
-            await new Promise(r => setTimeout(r, 2000 + Math.random() * 3000));
-            try { await action(id); } catch (e) { this.ctx.logger.error(`[${name}] 失败`, e); }
-        }
+
+        // 使用 map 创建 Promise 数组，并在内部处理单个任务的错误，防止一个失败导致整体中断
+        const tasks = targets.map(async (id) => {
+            try {
+                await action(id);
+            } catch (e) {
+                this.ctx.logger.error(`[${name}] 失败`, e);
+            }
+        });
+
+        // Promise.all 会并行等待所有任务完成
+        await Promise.all(tasks);
     }
 }
