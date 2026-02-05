@@ -53,19 +53,19 @@ export function buildConfigUI(ctx: NapCatPluginContext) {
         NapCatConfig.html('<div style="margin-top:10px; background:#f0f9eb; padding:8px; border-radius:4px;"><b>📅 群自动打卡</b></div>'),
         NapCatConfig.boolean('groupSign_enable', '启用', currentConfig.groupSign_enable),
         NapCatConfig.text('groupSign_time', '执行时间', currentConfig.groupSign_time),
-        NapCatConfig.text('groupSign_targets', '群号列表', currentConfig.groupSign_targets),
+        NapCatConfig.text('groupSign_targets', '群号列表 (使用 `all` 为所有群)', currentConfig.groupSign_targets),
 
         NapCatConfig.html('<div style="margin-top:10px; background:#ecf5ff; padding:8px; border-radius:4px;"><b>🔥 群自动续火花</b></div>'),
         NapCatConfig.boolean('groupSpark_enable', '启用', currentConfig.groupSpark_enable),
         NapCatConfig.text('groupSpark_time', '执行时间', currentConfig.groupSpark_time),
         NapCatConfig.text('groupSpark_message', '内容', currentConfig.groupSpark_message),
-        NapCatConfig.text('groupSpark_targets', '群号列表', currentConfig.groupSpark_targets),
+        NapCatConfig.text('groupSpark_targets', '群号列表 (使用 `all` 为所有群)', currentConfig.groupSpark_targets),
 
         NapCatConfig.html('<div style="margin-top:10px; background:#fdf6ec; padding:8px; border-radius:4px;"><b>✨ 好友自动续火花</b></div>'),
         NapCatConfig.boolean('friendSpark_enable', '启用', currentConfig.friendSpark_enable),
         NapCatConfig.text('friendSpark_time', '执行时间', currentConfig.friendSpark_time),
         NapCatConfig.text('friendSpark_message', '内容', currentConfig.friendSpark_message),
-        NapCatConfig.text('friendSpark_targets', 'QQ号列表', currentConfig.friendSpark_targets),
+        NapCatConfig.text('friendSpark_targets', 'QQ号列表 (使用 `all` 为所有好友)', currentConfig.friendSpark_targets),
 
         // --- 动态任务控制区 ---
         NapCatConfig.html('<div style="margin-top:20px; border-top:2px solid #eee; padding-top:15px;"><h3>🤖 自定义任务管理</h3></div>'),
