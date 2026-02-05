@@ -48,3 +48,11 @@ export const DEFAULT_CONFIG: PluginConfig = {
     customTask_2_enable: false, customTask_2_type: 'group', customTask_2_target: '', customTask_2_time: '', customTask_2_interval: '', customTask_2_message: '',
     customTask_3_enable: false, customTask_3_type: 'group', customTask_3_target: '', customTask_3_time: '', customTask_3_interval: '', customTask_3_message: '',
 };
+
+export interface GroupInfo {
+    group_id: number,
+}
+
+export interface FriendInfo {
+    user_id: number,
+}
