@@ -1,6 +1,7 @@
 // @ts-ignore
 import { NapCatPluginContext } from 'napcat-types';
 import { currentConfig } from './config';
+import { FriendInfo, GroupInfo } from './types';
 
 // 定义全局键名，确保跨文件/跨重载周期都能访问
 // 这是解决“无法停止”问题的关键
@@ -129,15 +130,25 @@ export class TaskManager {
         if (timeStr === this.lastExecutedTime) return;
         this.lastExecutedTime = timeStr;
 
+        const allGroups = [];
+        if (currentConfig.groupSign_targets.toLowerCase() === 'all' || currentConfig.groupSpark_targets.toLowerCase() === 'all') {
+            allGroups.push(...(await this.callOB11('get_group_list', {})).data.map((group: GroupInfo) => group.group_id));
+        }
+
+        const allFriends = [];
+        if (currentConfig.friendSpark_targets.toLowerCase() === 'all') {
+            allFriends.push(...(await this.callOB11('get_friend_list', {})).data.map((friend: FriendInfo) => friend.user_id));
+        }
+
         // 内置任务
         if (currentConfig.groupSign_enable && timeStr === currentConfig.groupSign_time) {
-            this.executeBatch('群打卡', currentConfig.groupSign_targets, async (id) => { await this.callOB11('send_group_sign', { group_id: id }); });
+            this.executeBatch('群打卡', currentConfig.groupSign_targets.toLowerCase() == 'all' ? allGroups.join(',') : currentConfig.groupSign_targets, async (id) => { await this.callOB11('send_group_sign', { group_id: id }); });
         }
         if (currentConfig.groupSpark_enable && timeStr === currentConfig.groupSpark_time) {
-            this.executeBatch('群火花', currentConfig.groupSpark_targets, async (id) => { await this.callOB11('send_msg', { message_type: 'group', group_id: id, message: currentConfig.groupSpark_message }); });
+            this.executeBatch('群火花', currentConfig.groupSpark_targets.toLowerCase() == 'all' ? allGroups.join(',') : currentConfig.groupSpark_targets, async (id) => { await this.callOB11('send_msg', { message_type: 'group', group_id: id, message: currentConfig.groupSpark_message }); });
         }
         if (currentConfig.friendSpark_enable && timeStr === currentConfig.friendSpark_time) {
-            this.executeBatch('好友火花', currentConfig.friendSpark_targets, async (id) => { await this.callOB11('send_msg', { message_type: 'private', user_id: id, message: currentConfig.friendSpark_message }); });
+            this.executeBatch('好友火花', currentConfig.friendSpark_targets.toLowerCase() == 'all' ? allFriends.join(',') : currentConfig.friendSpark_targets, async (id) => { await this.callOB11('send_msg', { message_type: 'private', user_id: id, message: currentConfig.friendSpark_message }); });
         }
 
         // 自定义任务 (每日定时)
