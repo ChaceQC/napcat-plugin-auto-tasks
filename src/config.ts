@@ -91,12 +91,17 @@ export function buildConfigUI(ctx: NapCatPluginContext) {
             NapCatConfig.boolean(`customTask_${i}_enable`, `启用任务 ${i}`, currentConfig[`customTask_${i}_enable`] || false, '开关'),
             NapCatConfig.select(`customTask_${i}_type`, '目标类型', [
                 { label: '群消息', value: 'group' },
-                { label: '私聊消息', value: 'private' }
+                { label: '私聊消息', value: 'private' },
+                { label: '群公告', value: 'group_notice' }
             ], currentConfig[`customTask_${i}_type`] || 'group', ''),
             NapCatConfig.text(`customTask_${i}_target`, '目标号码', currentConfig[`customTask_${i}_target`] || '', '群号或QQ号'),
             NapCatConfig.text(`customTask_${i}_time`, '每日时间', currentConfig[`customTask_${i}_time`] || '', 'HH:mm:ss'),
-            NapCatConfig.text(`customTask_${i}_interval`, '或 循环间隔(秒)', currentConfig[`customTask_${i}_interval`] || '', '优先级高'),
-            NapCatConfig.text(`customTask_${i}_message`, '消息内容', currentConfig[`customTask_${i}_message`] || '', '支持CQ码')
+            NapCatConfig.text(`customTask_${i}_interval`, '或 循环间隔(秒)', currentConfig[`customTask_${i}_interval`] || '', '优先级高(群公告无效)'),
+            NapCatConfig.text(`customTask_${i}_message`, '消息内容', currentConfig[`customTask_${i}_message`] || '', '支持CQ码 (群公告为内容)'),
+            // 群公告专属参数
+            NapCatConfig.text(`customTask_${i}_image`, '公告图片(选填)', currentConfig[`customTask_${i}_image`] || '', '网络URL或本地路径'),
+            NapCatConfig.boolean(`customTask_${i}_is_pinned`, '公告置顶', currentConfig[`customTask_${i}_is_pinned`] || false, '是否置顶'),
+            NapCatConfig.boolean(`customTask_${i}_is_confirm`, '公告需确认', currentConfig[`customTask_${i}_is_confirm`] || false, '是否需确认')
         );
     }
 

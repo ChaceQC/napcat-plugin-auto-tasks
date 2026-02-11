@@ -9,11 +9,15 @@ const GLOBAL_TIMER_KEY = Symbol.for('NAPCAT_AUTO_TASKS_REGISTRY');
 interface InternalTask {
     slotIndex: number;
     enable: boolean;
-    type: 'group' | 'private';
+    type: 'group' | 'private' | 'group_notice';
     target: string;
     time: string;
     interval: number;
     message: string;
+    // 群公告专用
+    image?: string;
+    is_pinned?: boolean;
+    is_confirm?: boolean;
 }
 
 export class TaskManager {
@@ -95,7 +99,13 @@ export class TaskManager {
                     time: currentConfig[`customTask_${i}_time`],
                     interval: parseInt(intervalStr, 10) || 0,
                     // @ts-ignore
-                    message: currentConfig[`customTask_${i}_message`]
+                    message: currentConfig[`customTask_${i}_message`],
+                    // @ts-ignore
+                    image: currentConfig[`customTask_${i}_image`],
+                    // @ts-ignore
+                    is_pinned: currentConfig[`customTask_${i}_is_pinned`],
+                    // @ts-ignore
+                    is_confirm: currentConfig[`customTask_${i}_is_confirm`]
                 });
             }
         }
@@ -109,12 +119,22 @@ export class TaskManager {
 
         // 3. 启动间隔循环任务 (注册到全局)
         tasks.forEach((task) => {
+            // 群公告不支持循环发送，强制忽略 interval
+            if (task.type === 'group_notice') return;
+
             if (task.interval > 0) {
                 const ms = Math.max(task.interval * 1000, 5000);
                 this.ctx.logger.info(`[任务${task.slotIndex}] ⏳ 循环启动: 目标 ${task.target}, 间隔 ${task.interval}s`);
 
                 const timer = setInterval(() => {
-                    this.executeInternalTask(task);
+                    // 独立 try-catch 保护循环任务
+                    try {
+                        this.executeInternalTask(task).catch(e => {
+                            this.ctx.logger.error(`[任务${task.slotIndex}] 循环执行异常:`, e);
+                        });
+                    } catch (e) {
+                        this.ctx.logger.error(`[任务${task.slotIndex}] 循环触发异常:`, e);
+                    }
                 }, ms);
 
                 this.register(timer);
@@ -143,19 +163,48 @@ export class TaskManager {
         // 自定义任务 (每日定时)
         for (const task of tasks) {
             // 只有 interval <= 0 才走这个逻辑
-            if (task.interval <= 0 && task.time === timeStr) {
-                this.executeInternalTask(task);
+            // 群公告强制走定时逻辑
+            const isScheduleMode = task.interval <= 0 || task.type === 'group_notice';
+
+            if (isScheduleMode && task.time === timeStr) {
+                // 使用 try-catch 包裹单个任务执行，防止中断循环
+                try {
+                    this.executeInternalTask(task).catch(e => {
+                        this.ctx.logger.error(`[任务${task.slotIndex}] 定时执行异步异常:`, e);
+                    });
+                } catch (e) {
+                    this.ctx.logger.error(`[任务${task.slotIndex}] 定时触发异常:`, e);
+                }
             }
         }
     }
 
     private async executeInternalTask(task: InternalTask) {
-        this.ctx.logger.info(`[任务${task.slotIndex}] ▶️ 触发: ${task.target}`);
-        await new Promise(r => setTimeout(r, Math.random() * 3000));
-        const payload: any = { message_type: task.type, message: task.message };
-        if (task.type === 'group') payload.group_id = task.target;
-        else payload.user_id = task.target;
-        await this.callOB11('send_msg', payload);
+        try {
+            this.ctx.logger.info(`[任务${task.slotIndex}] ▶️ 触发: ${task.target} (${task.type})`);
+            await new Promise(r => setTimeout(r, Math.random() * 3000));
+
+            if (task.type === 'group_notice') {
+                const payload = {
+                    group_id: task.target,
+                    content: task.message,
+                    image: task.image || undefined,
+                    pinned: task.is_pinned ? 1 : 0,
+                    type: 1,
+                    confirm_required: task.is_confirm ? 1 : 0,
+                    is_show_edit_card: 1,
+                    tip_window_type: 0
+                };
+                await this.callOB11('_send_group_notice', payload);
+            } else {
+                const payload: any = { message_type: task.type, message: task.message };
+                if (task.type === 'group') payload.group_id = task.target;
+                else payload.user_id = task.target;
+                await this.callOB11('send_msg', payload);
+            }
+        } catch (e) {
+            this.ctx.logger.error(`[任务${task.slotIndex}] 执行失败:`, e);
+        }
     }
 
     private async executeBatch(name: string, targetsStr: string, action: (id: string) => Promise<void>) {
