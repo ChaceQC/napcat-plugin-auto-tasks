@@ -203,7 +203,7 @@ export class TaskManager {
                     pinned: task.is_pinned ? 1 : 0,
                     type: 1,
                     confirm_required: task.is_confirm ? 1 : 0,
-                    is_show_edit_card: 1,
+                    is_show_edit_card: 0,
                     tip_window_type: 0
                 };
                 await this.callOB11('_send_group_notice', payload);
