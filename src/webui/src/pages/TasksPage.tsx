@@ -96,7 +96,7 @@ export default function TasksPage() {
                         onToggle={(v) => setBuiltin({ ...builtin, groupSign: { ...builtin.groupSign, enable: v } })}
                     >
                         <InputField label="执行时间" value={builtin.groupSign.time} onChange={(v) => setBuiltin({ ...builtin, groupSign: { ...builtin.groupSign, time: v } })} placeholder="HH:mm:ss" />
-                        <InputField label="群号列表" value={builtin.groupSign.targets} onChange={(v) => setBuiltin({ ...builtin, groupSign: { ...builtin.groupSign, targets: v } })} placeholder="逗号分隔，或 all" />
+                        <InputField label="群号列表" value={builtin.groupSign.targets} onChange={(v) => setBuiltin({ ...builtin, groupSign: { ...builtin.groupSign, targets: v } })} placeholder="逗号分隔，或 all 或 allAllow" />
                     </BuiltinTaskCard>
 
                     {/* 群续火花 */}
@@ -108,7 +108,7 @@ export default function TasksPage() {
                     >
                         <InputField label="执行时间" value={builtin.groupSpark.time} onChange={(v) => setBuiltin({ ...builtin, groupSpark: { ...builtin.groupSpark, time: v } })} placeholder="HH:mm:ss" />
                         <InputField label="消息内容" value={builtin.groupSpark.message} onChange={(v) => setBuiltin({ ...builtin, groupSpark: { ...builtin.groupSpark, message: v } })} />
-                        <InputField label="群号列表" value={builtin.groupSpark.targets} onChange={(v) => setBuiltin({ ...builtin, groupSpark: { ...builtin.groupSpark, targets: v } })} placeholder="逗号分隔，或 all" />
+                        <InputField label="群号列表" value={builtin.groupSpark.targets} onChange={(v) => setBuiltin({ ...builtin, groupSpark: { ...builtin.groupSpark, targets: v } })} placeholder="逗号分隔，或 all 或 allAllow" />
                     </BuiltinTaskCard>
 
                     {/* 好友续火花 */}
