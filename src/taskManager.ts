@@ -90,6 +90,17 @@ export class TaskManager {
             return allGroups;
         };
 
+        const getEnabledGroups = async (): Promise<number[]> => {
+            try {
+                const result = await pluginState.callApi('get_group_list', {}) as GroupInfo[] | undefined;
+                return (result || [])
+                    .filter(g => pluginState.isGroupEnabled(String(g.group_id)))
+                    .map(g => g.group_id);
+            } catch {
+                return [];
+            }
+        };
+
         const getAllFriends = async (): Promise<number[]> => {
             if (allFriends !== null) return allFriends;
             try {
@@ -105,6 +116,8 @@ export class TaskManager {
         if (config.groupSign_enable && timeStr === config.groupSign_time) {
             const targets = config.groupSign_targets.toLowerCase() === 'all'
                 ? (await getAllGroups()).join(',')
+                : config.groupSign_targets.toLowerCase() === 'allallow'
+                ? (await getEnabledGroups()).join(',')
                 : config.groupSign_targets;
             this.executeBatch('群打卡', targets, async (id) => {
                 await pluginState.callApi('send_group_sign', { group_id: id });
@@ -115,6 +128,8 @@ export class TaskManager {
         if (config.groupSpark_enable && timeStr === config.groupSpark_time) {
             const targets = config.groupSpark_targets.toLowerCase() === 'all'
                 ? (await getAllGroups()).join(',')
+                : config.groupSpark_targets.toLowerCase() === 'allallow'
+                ? (await getEnabledGroups()).join(',')
                 : config.groupSpark_targets;
             this.executeBatch('群火花', targets, async (id) => {
                 await pluginState.callApi('send_msg', {
